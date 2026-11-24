@@ -1,0 +1,24 @@
+[Unit]
+Description=WoW: Forever AH quantity tracker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Template: edit User= and the two EnvironmentFile= paths for your setup.
+# %h expands to the home directory of the user above.
+User=ah-tracker
+WorkingDirectory=%h/code/ah-tracker
+# Optional files (leading -) — the service starts without them; alerts just
+# stay off until the SMTP one exists. Plain shell env files, e.g.:
+#   secrets.env: AHL_API_KEY=...
+#   smtp.env:    AHT_SMTP_HOST=... AHT_SMTP_TO=... (see README)
+EnvironmentFile=-%h/.ah-tracker/secrets.env
+EnvironmentFile=-%h/.ah-tracker/smtp.env
+Environment=AHT_PORT=13321
+Environment=AHT_MARKET=forever.normal.alliance.us
+ExecStart=/usr/bin/python3 %h/code/ah-tracker/app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
