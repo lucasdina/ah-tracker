@@ -110,3 +110,13 @@ market stay in the DB; the UI reads the active market only.)
 - `.github/workflows/build-image.yml` — CI: build + push image to GHCR
 - `ah-tracker.service` — systemd unit (template: edit `User=` and the env-file paths for your setup)
 - `~/.ah-tracker/tracker.db` — SQLite state
+
+## Security note
+This is a single-user app with **no authentication** — anyone who can reach
+the port can view data and modify the watchlist. Keep it on a trusted network
+(LAN/tailnet) or put it behind an authenticating reverse proxy. It only talks
+out to `api.ahledger.com` and (optionally) your SMTP host.
+
+## License
+MIT — see [LICENSE](LICENSE). Market data © AHledger; attribution is shown in
+the UI per their API terms.

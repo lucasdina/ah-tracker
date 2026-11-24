@@ -38,7 +38,7 @@ KEY = os.environ.get("AHL_API_KEY", "")  # optional, raises rate limits
 
 BASE_DIR = os.path.expanduser(os.environ.get("AHT_HOME", "~/.ah-tracker"))
 DB_PATH = os.path.join(BASE_DIR, "tracker.db")
-USER_AGENT = "ah-tracker/1.0 (personal use; contact: lucas)"
+USER_AGENT = "ah-tracker/1.0"
 
 # ---------------------------------------------------------------- db
 
