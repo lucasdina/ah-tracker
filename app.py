@@ -702,6 +702,7 @@ HTML = r"""<!doctype html>
   .cand .cname { flex: 1; font-weight: 600; }
   .cand .q { font-size: 12px; color: var(--dim); white-space: nowrap; }
   .cand .addbtn { padding: 6px 16px; font-size: 13px; flex: none; }
+  .tblwrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; border-collapse: collapse; background: var(--panel);
     border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
   th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
@@ -746,12 +747,67 @@ HTML = r"""<!doctype html>
     position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
     background: var(--panel2); border: 1px solid var(--gold); color: var(--text);
     padding: 9px 18px; border-radius: 8px; font-size: 14px;
+    max-width: calc(100vw - 32px); width: max-content; text-align: center;
     opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 100;
   }
   .toast.show { opacity: 1; }
   .toast.err { border-color: var(--red); color: var(--red); }
   footer { margin-top: 18px; font-size: 12px; color: var(--dim); }
   footer a { color: var(--gold); text-decoration: none; }
+
+  /* tablet: keep the table inside the column */
+  @media (max-width: 920px) {
+    th, td { padding: 9px 10px; }
+  }
+
+  /* mobile: table rows become stacked cards */
+  @media (max-width: 720px) {
+    .wrap { padding: 16px 12px 40px; }
+    h1 { font-size: 19px; }
+    h1 .sub { display: block; margin: 2px 0 0; }
+    .status { font-size: 12px; gap: 5px 12px; padding: 10px 12px; }
+    .addrow { flex-wrap: wrap; row-gap: 8px; }
+    .addrow input[type=text] { flex: 1 1 100%; }
+    .addrow button { flex: 1; padding: 11px 10px; white-space: normal; line-height: 1.15; }
+    .addrow button.ghost { flex: 1.3; }
+    .cand { flex-wrap: wrap; }
+    .cand .q { flex-basis: 100%; order: 3; white-space: normal; }
+    .del { font-size: 18px; padding: 6px 10px; }
+
+    .tblwrap { overflow: visible; }
+    table { display: block; border: 0; border-radius: 0; background: transparent; overflow: visible; }
+    thead { display: none; }
+    tbody, tr, td { display: block; }
+    tr[data-row] {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+    }
+    td {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; padding: 9px 12px; text-align: right; font-size: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    tr[data-row] td:last-child { border-bottom: 0; }
+    td::before {
+      content: attr(data-label); color: var(--dim); font-size: 11px;
+      text-transform: uppercase; letter-spacing: .6px; font-weight: 600; flex: none;
+    }
+    td.name {
+      justify-content: flex-start; padding: 12px; font-size: 15px;
+    }
+    td.name::before { content: none; }
+    td.name span { flex: 1; word-break: break-word; }
+    td.qty { font-size: 18px; }
+    td.th { justify-content: flex-start; flex-wrap: wrap; text-align: left; }
+    td.th .chip, td.th .dim { margin-left: 0; }
+    td.act { justify-content: flex-end; background: var(--panel2); border-top: 1px solid var(--border); }
+    td.act::before { content: none; }
+
+    .editrow td { display: block; padding: 12px; border: 0; background: var(--bg); }
+    .edwrap { gap: 10px; }
+    .edwrap label { flex: 1 1 100%; justify-content: space-between; }
+    .edwrap label input { flex: 1; width: auto; margin-left: 8px; }
+  }
 </style>
 </head>
 <body>
@@ -769,6 +825,7 @@ HTML = r"""<!doctype html>
   </div>
   <div class="cands" id="cands"></div>
 
+  <div class="tblwrap">
   <table id="table" style="display:none">
     <thead><tr>
       <th>Item</th>
@@ -781,6 +838,7 @@ HTML = r"""<!doctype html>
     </tr></thead>
     <tbody id="rows"></tbody>
   </table>
+  </div>
   <div class="empty" id="empty">No items on the watchlist yet — add one above.</div>
 
   <div id="alertsec" style="display:none">
@@ -878,14 +936,14 @@ async function loadItems() {
         ${r.icon ? `<img src="${esc(r.icon)}" alt="" loading="lazy">` : ""}
         <span class="${esc(r.quality ? r.quality.toLowerCase() : "common")}">${esc(r.name)}</span>
       </td>
-      <td>${thChips(r.thresholds)}</td>
-      <td class="num qty ${r.quantity === 0 ? "zero" : ""}">
+      <td class="th" data-label="Alerts">${thChips(r.thresholds)}</td>
+      <td class="num qty ${r.quantity === 0 ? "zero" : ""}" data-label="Quantity">
         ${r.quantity === null ? "—" : r.quantity.toLocaleString()}
       </td>
-      <td class="num">${r.minBuyout ?? "—"}</td>
-      <td class="num">${r.median ?? "—"}</td>
-      <td class="num dim">${timeAgo(r.updated)}</td>
-      <td class="num">
+      <td class="num" data-label="Min buyout">${r.minBuyout ?? "—"}</td>
+      <td class="num" data-label="Median">${r.median ?? "—"}</td>
+      <td class="num dim" data-label="Updated">${timeAgo(r.updated)}</td>
+      <td class="act">
         <button class="del" data-act="gear" data-id="${r.id}" title="Set alert thresholds">⚙</button>
         <button class="del" data-act="del" data-id="${r.id}" title="Remove">✕</button>
       </td>
