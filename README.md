@@ -37,14 +37,14 @@ python3 app.py
 The repo ships a `Dockerfile` (non-root, `python:3.14-slim`, stdlib-only app)
 and a GitHub Action (`.github/workflows/build-image.yml`) that builds and
 pushes the image to GHCR on every push to `main` and on `v*` tags:
-`ghcr.io/<owner>/ah-tracker` (`:latest` on the default branch, plus `v<version>`
-and `:sha` tags).
+`ghcr.io/lucasdina/ah-tracker` (`:latest` on the default branch, plus
+`v<version>` and `sha-<commit>` tags).
 
 `docker-compose.yml` example (Compose v2.24+ for the `required:` syntax):
 ```yaml
 services:
   ah-tracker:
-    image: ghcr.io/<owner>/ah-tracker:latest   # or drop `image:` and add `build: .`
+    image: ghcr.io/lucasdina/ah-tracker:latest   # or drop `image:` and add `build: .`
     restart: unless-stopped
     ports:
       - "13321:13321"
